@@ -23,7 +23,6 @@ The **Tree Schema** library is a simple interface that enables data creators and
 
 Here are a few quick snippets:
 
-
 Manage Your Data Lineage as Code
 --------------------------------
 .. sourcecode:: python
