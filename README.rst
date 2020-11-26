@@ -17,7 +17,7 @@ What You Can Do
 
 The **Tree Schema** library is a simple interface that enables data creators and data users to manage their Tree Schema `Data Catalog <https://treeschema.com>`_ as code. The Tree Schema library enables you to:
 
-- Manage `data lineage <https://treeschema.com/blog/data-lineage-api/>` as code
+- Manage `data lineage <https://treeschema.com/blog/data-lineage-api/>`_ as code
 - Capture the values of your fields and their definitions
 - Explore your catalog in the same notebook as your data analysis
 
