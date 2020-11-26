@@ -34,7 +34,7 @@ with open(path.join(this_directory, 'README.rst'), encoding='utf-8') as f:
 
 setup(
     name='treeschema',
-    version='1.0.4',
+    version='1.0.5',
     long_description=long_description,
     long_description_content_type='text/x-rst',
     description='A python client that simplifies interactions with the Tree Schema REST API.',
