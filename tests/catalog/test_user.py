@@ -58,27 +58,13 @@ class TestBaseSerializer(unittest.TestCase):
 
     @patch('treeschema.api.client.r.get')  
     def test_get_user_by_email(self, mock_get):
-        resp_users = [
-            {
-                "user_id": 2,
-                "name": "Asher",
-                "email": "asher@treeschema.com"
-            },
-            {
+        resp_obj = {
+            "users": {
                 "user_id": 1,
                 "name": "Grant",
                 "email": "grant@treeschema.com"
             }
-        ]
-        resp_obj = {
-            "meta": {
-                "current_page": 1,
-                "next_page": None,
-                "total_cnt": 2
-            },
-            "users": resp_users
         }
-        
         response = requests.Response()
         response.status_code = 200
         response.json = MagicMock()
@@ -87,4 +73,4 @@ class TestBaseSerializer(unittest.TestCase):
         
         client = APIClient()
         resp = client.get_all_users()
-        assert resp == resp_users
+        assert resp == resp_obj

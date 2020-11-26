@@ -1,4 +1,10 @@
 
+.. meta::
+    :description lang=en:
+        The Tree Schema Python client allows you to interact with your data 
+        catalog programmatically, including managing your data lineage as code.
+
+
 Tree Schema Python Client
 =========================
 
