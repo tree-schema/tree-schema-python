@@ -10,7 +10,9 @@ API Reference
 
    treeschema.treeschema
    treeschema.catalog
+   treeschema.integrations
    treeschema.auth
    treeschema.api.client
    treeschema.exceptions
+
    

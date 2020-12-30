@@ -6,8 +6,8 @@ treeschema.catalog
    :undoc-members:
    :show-inheritance:
 
-.. toctree::
 
+.. toctree::
    treeschema.catalog.base_serializer
    treeschema.catalog.data_field
    treeschema.catalog.data_schema

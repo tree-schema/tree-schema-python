@@ -27,4 +27,5 @@ comprehensive overview of all of the API features.
    transformations
    transformation_links
    advanced_transformations
+   dbt
    
