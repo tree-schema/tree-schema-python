@@ -3,6 +3,7 @@ from typing import Any, Dict, List
 from . import DataSchema, TreeSchemaSerializer, TreeSchemaUser
 from .tags import get_tags_added
 from ..exceptions import DataAssetDoesNotExist
+from ..integrations.dbt import DbtManager
 
 
 class DataStore(TreeSchemaSerializer):
@@ -39,6 +40,7 @@ class DataStore(TreeSchemaSerializer):
         self._schemas_by_name = {}
         self._schemas_retrieved = False
         super(DataStore, self).__init__(data_store_inputs)
+        self.dbt = DbtManager(self.id)
         
     def _get_self_by_id(self):
         raw_resp = self.client.get_data_store_by_id(self.id)
@@ -208,3 +210,4 @@ class DataStore(TreeSchemaSerializer):
         return deleted
 
 
+    

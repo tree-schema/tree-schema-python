@@ -73,6 +73,23 @@ class APIClient(object):
             )
         return resp.json()
 
+    def _post_files_to_url(self, url: str, files: Dict) -> Dict:
+        """Sends a post request to Tree Schema 
+
+        :param url: The URL for the API
+        :param json_body: A dictionary of values to send 
+        :returns: A dictionary response from the request
+        """
+        file_headers = self.base_headers.copy()
+        file_headers['Accept'] = 'application/octet-stream'
+        inputs = {'files': files, 'headers': file_headers}
+        resp = r.post(url, **inputs)
+        if resp.status_code >= 400:
+            raise TreeSchemaApiError(
+                'Error: %s' % resp.text
+            )
+        return resp.json()
+
     def _delete_by_url(self, url: str, json_body: Dict = None) -> bool:
         """Executes a DELETE from the Tree Schema URL 
 
@@ -489,3 +506,61 @@ class APIClient(object):
         url = endpoints.TRANSFORMATION_LINK.format(**args)
         return self._get_by_url(url)
     
+    def parse_dbt_file(
+        self, 
+        data_store_id, 
+        manifest_content
+    ) -> str:
+        """Sends a dbt manifest file to Tree Schema to be parsed. Returns
+        the dbt_update_id that is used to represent the parse instance and
+        can be used to get the status later.
+        """
+        args = {'data_store_id': data_store_id}
+        url = endpoints.PARSE_MANIFEST.format(**args)
+
+        files = {'manifest_file': manifest_content}
+
+        parse_resp = self._post_files_to_url(
+            url, 
+            files=files
+        )
+        return parse_resp['dbt_process_id']
+
+    def get_dbt_parse_status(
+        self, 
+        dbt_process_id
+    ) -> str:
+        """Retrieves the status of the dbt parse instance."""
+        url = endpoints.GET_MANIFEST_PARSE_RESULTS
+
+        params = {'dbt_process_id': dbt_process_id}
+        return self._get_by_url(url, params=params)
+
+    def save_dbt_results(
+        self, 
+        dbt_process_id: str,
+        add_schemas_fields: bool = False,
+        update_descriptions: bool = False,
+        update_tags: bool = True,
+        add_lineage: bool = True
+    ) -> str:
+        """Retrieves the status of the dbt parse instance.
+        
+        :param dbt_process_id: unique ID for the parse instance
+        :param add_schemas_fields: whether or not to add the manifest schemas and fields
+        :param update_descriptions: whether or not to update descriptions from the manifest
+        :param update_tags: whether or not to update tags from the manifest
+        :param add_lineage: whether or not to add data lineage from the manifest
+        """
+        opts = {
+            'dbt_process_id': dbt_process_id,
+            'add_schemas_fields': add_schemas_fields,
+            'update_descriptions': update_descriptions,
+            'update_tags': update_tags,
+            'add_lineage': add_lineage,
+        }
+        url = endpoints.SAVE_MANIFEST_PARSE_RESULTS
+        return self._post_to_url(
+            url, 
+            json_body=opts
+        )

@@ -3,14 +3,14 @@
  Tree Schema Python Client
 ===========================
 
-:Version: 1.0.5
+:Version: 1.0.6
 :Documentation: https://developer.treeschema.com/python-client
 :Download: https://pypi.org/project/treeschema
 :Source: https://github.com/tree-schema/tree-schema-python
 :Keywords: data lineage, metadata
 
 
-You ETL/ELT processes are diverse, your pipelines are serverless - the Tree Schema Python client aims to provide you the flexibility to integrate into any ecosystem!
+Your ETL/ELT processes are diverse, your pipelines are serverless - the Tree Schema Python client aims to provide you the flexibility to integrate into any ecosystem!
 
 What You Can Do
 ---------------
