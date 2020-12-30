@@ -1,13 +1,5 @@
-
-import json
-import os
-os.environ['TREE_SCHEMA_HOST'] = 'https://devapi.treeschema.com'
-
-
 from treeschema import TreeSchema
-
-ts = TreeSchema('grant@treeschema.com', 'tree_schema_de543795a0294cea9bc0900b049aeed7')   
-
+ts = TreeSchema('your@email.com', 'your_tree_schema_secret_key')   
 
 # Get a data store # note - the data store must be eligible for dbt processing
 ds = ts.data_store(1)
