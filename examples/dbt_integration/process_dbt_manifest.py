@@ -1,5 +1,7 @@
+import json
 from treeschema import TreeSchema
 ts = TreeSchema('your@email.com', 'your_tree_schema_secret_key')   
+
 
 # Get a data store # note - the data store must be eligible for dbt processing
 ds = ts.data_store(1)

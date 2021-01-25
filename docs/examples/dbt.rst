@@ -8,7 +8,7 @@ tags. Tree Schema is also able to use the schema-to-schema data lineage provided
 to infer the field level data lineage that occurs between your schemas.
 
 A more in-depth overview of the Tree Schema / dbt integration can be found in 
-the `Tree Schema documentation <>`_
+the `Tree Schema documentation <https://help.treeschema.com/dbt/dbt.html>`_.
 
 The dbt Manager
 ---------------

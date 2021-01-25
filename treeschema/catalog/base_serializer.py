@@ -20,11 +20,11 @@ class TreeSchemaSerializer(object):
             if isinstance(raw_inputs, dict):
                 if 'steward' in raw_inputs:
                     raw_inputs['steward'] = (
-                        self._scalar_or_obj(raw_inputs['steward'])
+                        self._scalar_or_obj(raw_inputs['steward'], return_id=True)
                     )
                 if 'tech_poc' in raw_inputs:
                     raw_inputs['tech_poc'] = (
-                        self._scalar_or_obj(raw_inputs['tech_poc'])
+                        self._scalar_or_obj(raw_inputs['tech_poc'], return_id=True)
                     )
 
         self.client = APIClient()
@@ -171,11 +171,11 @@ class TreeSchemaSerializer(object):
                 _resp = item
         return _resp
 
-    def _scalar_or_obj(self, item):
+    def _scalar_or_obj(self, item, return_id=False):
         """Allows the user to pass in an instance of the base 
         serializer or an ID that referes to an object in 
         Tree Schema and the serializer will return the ID 
-        or the corresponding class if an tree schema object
+        or the corresponding class if a tree schema object
         is passed.
         
         For example, when associating a user to a field you
@@ -183,12 +183,18 @@ class TreeSchemaSerializer(object):
         `TreeSchemaUser` object which refers to the user ID. 
         This allows you to pass in either and the serializer 
         will return the correct response
+
+        :param return_id: Boolean to force the response to 
+        be the ID of the object, if it exists.
         """
         _resp = None
         if item:
             if isinstance(item, TreeSchemaSerializer):
-                if hasattr(item, '_obj'):
-                    _resp = item._obj
+                if return_id:
+                    _resp = item.id
+                else:
+                    if hasattr(item, '_obj'):
+                        _resp = item._obj
             else:
                 _resp = item
         return _resp
