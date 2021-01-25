@@ -166,7 +166,7 @@ class DbtManager(object):
                 'parse status must be "parsed" in order to save the results.'
             )
         
-        elif self.parse_status == 'waiting':
+        elif self.parse_status == 'error':
             raise InvalidManifestParseStatus(
                 'The manifest parse status returned an error state. The following error '
                 'was received: %s' % self.parse_error
