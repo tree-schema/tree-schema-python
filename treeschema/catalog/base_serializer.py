@@ -20,11 +20,11 @@ class TreeSchemaSerializer(object):
             if isinstance(raw_inputs, dict):
                 if 'steward' in raw_inputs:
                     raw_inputs['steward'] = (
-                        self._scalar_or_obj(raw_inputs['steward'], return_id=True)
+                        self._scalar_or_obj(raw_inputs['steward'])
                     )
                 if 'tech_poc' in raw_inputs:
                     raw_inputs['tech_poc'] = (
-                        self._scalar_or_obj(raw_inputs['tech_poc'], return_id=True)
+                        self._scalar_or_obj(raw_inputs['tech_poc'])
                     )
 
         self.client = APIClient()
@@ -33,6 +33,21 @@ class TreeSchemaSerializer(object):
         self._raw_inputs = raw_inputs.copy() if isinstance(raw_inputs, dict) else None
         self._is_validated = False
         self.obj
+
+    def _simplify_user_raw_inputs(self, raw_inputs: Dict):
+        """Updates the raw inputs raw_inputs the steward and tech_poc to use the 
+        ID and not the dict of values where possible. This allows a single scalar
+        to be passed to the API instead of a dictionary of values.
+        """
+        resp = None
+        if isinstance(raw_inputs, dict):
+            raw_outputs = raw_inputs.copy()
+            for role in ['steward', 'tech_poc']:
+                role_v = raw_outputs.pop(role, None)
+                if isinstance(role_v, dict) and 'id' in role_v:
+                    raw_outputs[role_v] = role_v['id']
+            resp = raw_outputs
+        return resp
 
     def __repr__(self):
         if hasattr(self, '_obj') and isinstance(self._obj, dict):
@@ -171,7 +186,7 @@ class TreeSchemaSerializer(object):
                 _resp = item
         return _resp
 
-    def _scalar_or_obj(self, item, return_id=False):
+    def _scalar_or_obj(self, item):
         """Allows the user to pass in an instance of the base 
         serializer or an ID that referes to an object in 
         Tree Schema and the serializer will return the ID 
@@ -190,11 +205,8 @@ class TreeSchemaSerializer(object):
         _resp = None
         if item:
             if isinstance(item, TreeSchemaSerializer):
-                if return_id:
-                    _resp = item.id
-                else:
-                    if hasattr(item, '_obj'):
-                        _resp = item._obj
+                if hasattr(item, '_obj'):
+                    _resp = item._obj
             else:
                 _resp = item
         return _resp

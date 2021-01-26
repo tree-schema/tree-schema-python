@@ -93,7 +93,7 @@ class Transformation(TreeSchemaSerializer):
         resp = None
         tags_to_add = [t for t in tags if t not in self.tags]
         if len(tags_to_add) > 0:
-            tag_res = self.client.add_tag_to_data_store(self.id, tags_to_add)
+            tag_res = self.client.add_tag_to_transformation(self.id, tags_to_add)
             added_tags = get_tags_added(tag_res)
             self.tags.extend(added_tags)
             resp = tag_res
@@ -102,7 +102,9 @@ class Transformation(TreeSchemaSerializer):
     def _create(self):
         transformation = {}
         if not self._is_validated:
-            transformation_raw = self.client.create_transformation(self._raw_inputs)
+            transformation_raw = self.client.create_transformation(
+                self._simplify_user_raw_inputs(self._raw_inputs)
+            )
             transformation = transformation_raw.get('transformation')
             if transformation:
                 self._is_validated = True

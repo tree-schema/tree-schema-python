@@ -75,7 +75,9 @@ class DataStore(TreeSchemaSerializer):
     def _create(self):
         data_store = {}
         if not self._is_validated:
-            data_store_raw = self.client.create_data_store(self._raw_inputs)
+            data_store_raw = self.client.create_data_store(
+                self._simplify_user_raw_inputs(self._raw_inputs)
+            )
             data_store = data_store_raw.get('data_store')
             if data_store:
                 self._is_validated = True

@@ -450,6 +450,16 @@ class APIClient(object):
             json_body=transformation_info
         )
 
+    def add_tag_to_transformation(self, transformation_id, tags) -> bool:
+        """Adds tags to a data store via the Tree Schema API"""
+        _tags = {'tags': tags}
+        args = {'transformation_id': transformation_id}
+        url = endpoints.TRANSFORMATION_TAGS.format(**args)
+        return self._post_to_url(
+            url, 
+            json_body=_tags,
+        )
+
     def get_all_transformation_links(self, transformation_id) -> Dict:
         """Creates a data store via the Tree Schema API"""
         args = {'transformation_id': transformation_id}

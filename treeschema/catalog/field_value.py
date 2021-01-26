@@ -67,7 +67,7 @@ class FieldValue(TreeSchemaSerializer):
                 data_store_id=self.data_store_id, 
                 data_schema_id=self.data_schema_id,
                 field_id=self.field_id,
-                field_value_info=self._raw_inputs
+                field_value_info=self._simplify_user_raw_inputs(self._raw_inputs)
             )
             field_value = field_value_resp['field_value']
             if field_value:
