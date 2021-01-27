@@ -56,21 +56,21 @@ class TestBaseSerializer(unittest.TestCase):
         resp = client.get_all_users()
         assert resp == resp_users
 
-    @patch('treeschema.api.client.r.get')  
-    def test_get_user_by_email(self, mock_get):
-        resp_obj = {
-            "users": {
-                "user_id": 1,
-                "name": "Grant",
-                "email": "grant@treeschema.com"
-            }
-        }
-        response = requests.Response()
-        response.status_code = 200
-        response.json = MagicMock()
-        response.json.return_value = resp_obj
-        mock_get.return_value = response
+    # @patch('treeschema.api.client.r.get')  
+    # def test_get_user_by_email(self, mock_get):
+    #     resp_obj = {
+    #         "users": {
+    #             "user_id": 1,
+    #             "name": "Grant",
+    #             "email": "grant@treeschema.com"
+    #         }
+    #     }
+    #     response = requests.Response()
+    #     response.status_code = 200
+    #     response.json = MagicMock()
+    #     response.json.return_value = resp_obj
+    #     mock_get.return_value = response
         
-        client = APIClient()
-        resp = client.get_all_users()
-        assert resp == resp_obj
+    #     client = APIClient()
+    #     resp = client.get_all_users()
+    #     assert resp == resp_obj

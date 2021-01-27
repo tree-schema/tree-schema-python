@@ -34,6 +34,21 @@ class TreeSchemaSerializer(object):
         self._is_validated = False
         self.obj
 
+    def _simplify_user_raw_inputs(self, raw_inputs: Dict):
+        """Updates the raw inputs raw_inputs the steward and tech_poc to use the 
+        ID and not the dict of values where possible. This allows a single scalar
+        to be passed to the API instead of a dictionary of values.
+        """
+        resp = None
+        if isinstance(raw_inputs, dict):
+            raw_outputs = raw_inputs.copy()
+            for role in ['steward', 'tech_poc']:
+                role_v = raw_outputs.pop(role, None)
+                if isinstance(role_v, dict) and 'id' in role_v:
+                    raw_outputs[role_v] = role_v['id']
+            resp = raw_outputs
+        return resp
+
     def __repr__(self):
         if hasattr(self, '_obj') and isinstance(self._obj, dict):
             repr_items = []
@@ -175,7 +190,7 @@ class TreeSchemaSerializer(object):
         """Allows the user to pass in an instance of the base 
         serializer or an ID that referes to an object in 
         Tree Schema and the serializer will return the ID 
-        or the corresponding class if an tree schema object
+        or the corresponding class if a tree schema object
         is passed.
         
         For example, when associating a user to a field you
@@ -183,6 +198,9 @@ class TreeSchemaSerializer(object):
         `TreeSchemaUser` object which refers to the user ID. 
         This allows you to pass in either and the serializer 
         will return the correct response
+
+        :param return_id: Boolean to force the response to 
+        be the ID of the object, if it exists.
         """
         _resp = None
         if item:

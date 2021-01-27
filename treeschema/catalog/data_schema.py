@@ -88,7 +88,7 @@ class DataSchema(TreeSchemaSerializer):
         if not self._is_validated:
             data_schema_raw = self.client.create_data_schema(
                 self.data_store_id, 
-                self._raw_inputs
+                self._simplify_user_raw_inputs(self._raw_inputs)
             )
             data_schema = data_schema_raw.get('data_schema')
             if data_schema:

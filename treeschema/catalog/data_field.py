@@ -113,7 +113,7 @@ class DataField(TreeSchemaSerializer):
             data_field_raw = self.client.create_data_field(
                 data_store_id=self.data_store_id, 
                 data_schema_id=self.data_schema_id,
-                data_field_info=self._raw_inputs
+                data_field_info=self._simplify_user_raw_inputs(self._raw_inputs)
             )
             data_field = data_field_raw.get('data_field')
             if data_field:
