@@ -1,9 +1,11 @@
 
-from typing import Dict
+from typing import Dict, List
 
 from . import TreeSchemaAuth
 from .api import APIClient
 from .catalog import DataStore, Transformation, TreeSchemaUser
+from .exceptions import InvalidInputs, UsernameSecretRequired
+from .ts_enums import FIELD, SCHEMA, DATA_STORE
 
 
 class TreeSchema(object):
@@ -20,19 +22,39 @@ class TreeSchema(object):
     >>> from treeschema import TreeSchema
     >>> ts = TreeSchema('<your email>', '<your secret key>')
     """
-    def __init__(self, 
-        username: str, 
-        secret_key: str, 
+    def __new__(
+        cls, 
+        username: str = None,
+        secret_key: str = None,
         *args, 
         **kwargs
-    ) -> None: 
-        self.username = username
-        self.auth = TreeSchemaAuth(username, secret_key)
-        self.client = APIClient()
-        self._entity_holder = _EntityHolder()
-        self._data_stores_retrieved = False
-        self._transformations_retrieved = False
-        self._users_retrieved = False
+    ):
+        """Creates a singleton for the Tree Schema auth object. This 
+        allows the auth credentails to be passed in one time and to
+        allow multiple clients to reuse the credentials without having 
+        the context of the username and secret.
+
+        :param username: The username in Tree Schema
+        :param secret_key: The secret key for the username in Tree Schema
+        """
+        if not hasattr(cls, 'instance'):
+            if not username or not secret_key:
+                _msg = (
+                    """Must provided username and API secret key, make 
+                    sure to create the 'TreeSchema' class first
+                    """
+                )
+                raise UsernameSecretRequired(_msg)
+            cls.username = username
+            cls.auth = TreeSchemaAuth(username, secret_key)
+            cls.client = APIClient()
+            cls._entity_holder = _EntityHolder()
+            cls._data_stores_retrieved = False
+            cls._transformations_retrieved = False
+            cls._users_retrieved = False
+            cls.instance = super(TreeSchema, cls).__new__(cls)
+            # cls.encoded_secret = get_encoded_secret(username, secret_key)
+        return cls.instance
 
     @property
     def data_stores(self):
@@ -110,7 +132,7 @@ class TreeSchema(object):
         if (isinstance(data_store_input, int) 
             and data_store_input in self._entity_holder._data_stores_by_id):
             data_store = self._entity_holder._data_stores_by_id[data_store_input]
-        if (isinstance(data_store_input, str) 
+        elif (isinstance(data_store_input, str) 
             and data_store_input.lower() in self._entity_holder._data_stores_by_name):
             data_store = self._entity_holder._data_stores_by_name[data_store_input.lower()]
         else:
@@ -164,7 +186,7 @@ class TreeSchema(object):
         if (isinstance(transformation_input, int) 
             and transformation_input in self._entity_holder._transformations_by_id):
             transformation = self._entity_holder._transformations_by_id[transformation_input]
-        if (isinstance(transformation_input, str) 
+        elif (isinstance(transformation_input, str) 
             and transformation_input.lower() in self._entity_holder._transformations_by_name):
             transformation = self._entity_holder._transformations_by_name[transformation_input.lower()]
         else:
@@ -226,8 +248,70 @@ class TreeSchema(object):
                 user = TreeSchemaUser(usr)
                 self._add_user(user)
             
-        return self.users    
+        return self.users
 
+    def batch_load_by_id(
+        self,
+        data_store_ids: List[int] = None,
+        schema_ids: List[int] = None,
+        field_ids: List[int] = None,
+        batch_size: int = 100
+    ):
+        """Batch loads a set of data assets in a more efficient manner
+        by reducing the API overhead. A list of IDs can be provided for
+        data stores, schemas and fields. When a list of fields is provided
+        for a given assset class, all parent assets will be returned 
+        as well. For example, passing in a list of field_ids will return
+        the fields, their associated schemas and the schema's associated
+        data stores.
+
+        All assets are serialized and added to the TreeSchema entity holder
+        as if they had been created individually. 
+
+        >>> Example...
+        """
+        assets = []
+        if isinstance(field_ids, list):
+            assets.extend([{'type': FIELD, 'id': i} for i in field_ids])
+
+        if isinstance(schema_ids, list):
+            assets.extend([{'type': SCHEMA, 'id': i} for i in schema_ids])
+
+        if isinstance(data_store_ids, list):
+            assets.extend([{'type': DATA_STORE, 'id': i} for i in data_store_ids])
+
+        if not assets:
+            raise InvalidInputs(
+                'Must provide at least one of "data_store_ids", "schema_ids" or "field_ids"'
+            )
+        
+        has_more_assets = True
+        asset_iter = 0
+        while has_more_assets:
+            asset_batch = assets[asset_iter * batch_size: asset_iter * batch_size + batch_size]
+            if len(asset_batch) == 0:
+                break
+
+            resp = self.client.batch_retrieve_assets(assets={'assets': asset_batch})
+            data_stores_found = resp.get('data_stores') or []
+            schemas_found = resp.get('data_schemas') or []
+            fields_found = resp.get('data_fields') or []
+            for data_store in data_stores_found:
+                self.data_store(data_store)
+
+            # Keep track of schemas to data stores
+            schema_ds_map = {}
+            for schema in schemas_found:
+                schema_ds_map[schema['data_schema_id']] = schema['data_store_id']
+                self.data_store(schema['data_store_id']).schema(schema, pre_fetch=False)
+
+            for field in fields_found:
+                ds_id = schema_ds_map[field['data_schema_id']]
+                schema_id = field['data_schema_id']
+                self.data_store(ds_id).schema(schema_id, pre_fetch=False).field(field, pre_fetch=False)
+
+            if len(asset_batch) < batch_size:
+                has_more_assets = False
 
 class _EntityHolder(object):
     """Holds objects to declutter the TreeSchema object"""

@@ -3,7 +3,7 @@
  Tree Schema Python Client
 ===========================
 
-:Version: 1.0.6
+:Version: 1.0.7
 :Documentation: https://developer.treeschema.com/python-client
 :Download: https://pypi.org/project/treeschema
 :Source: https://github.com/tree-schema/tree-schema-python

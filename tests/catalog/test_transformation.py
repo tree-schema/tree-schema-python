@@ -6,6 +6,7 @@ import mock
 import pytest
 import treeschema
 from treeschema.catalog import DataField, Transformation, TreeSchemaUser
+from treeschema import exceptions as ts_exceptions
 
 from . import TEST_USER
 from .test_data_field import TestDataField
@@ -117,12 +118,13 @@ class TestTransformation(unittest.TestCase):
         links_created_1 = t._get_link_structure(links_1)
         assert links_created_1 == [links_1]
         
-        # One invalid link
-        invalid_links_1 = {
-            'source_field_id': 1
-        }
-        invalid_links_created_1 = t._get_link_structure(invalid_links_1)
-        assert invalid_links_created_1 == None
+        with pytest.raises(ts_exceptions.InvalidLinksException):
+            # One invalid link
+            invalid_links_1 = {
+                'source_field_id': 1
+            }
+            invalid_links_created_1 = t._get_link_structure(invalid_links_1)
+            assert invalid_links_created_1 == None
 
         # Multiple valid links
         links_2 = [
@@ -132,13 +134,14 @@ class TestTransformation(unittest.TestCase):
         links_created_2 = t._get_link_structure(links_2)
         assert links_created_2 == links_2
 
-        # One valid, one invalid link (all must be valid)
-        invalid_links_2 = [
-            {'source_field_id': 1, 'target_field_id': 2},
-            {'source_field_id': 3}
-        ]
-        invalid_links_created_2 = t._get_link_structure(invalid_links_2)
-        assert invalid_links_created_2 == None
+        with pytest.raises(ts_exceptions.InvalidLinksException):
+            # One valid, one invalid link (all must be valid)
+            invalid_links_2 = [
+                {'source_field_id': 1, 'target_field_id': 2},
+                {'source_field_id': 3}
+            ]
+            invalid_links_created_2 = t._get_link_structure(invalid_links_2)
+            assert invalid_links_created_2 == None
         
         # One valid DataField
         inputs_1 = TestDataField.data_field_inputs.copy()

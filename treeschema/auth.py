@@ -18,12 +18,10 @@ def get_encoded_secret(username: str, secret_key: str) -> str:
 class TreeSchemaAuth(object):
     
     def __new__(cls, username: str = None, secret_key: str = None):
-        """
-        Return the most important thing about a person.
-        Parameters
-        ----------
-        your_name
-            A string indicating the name of the person.
+        """Creates a singleton for the Tree Schema auth object. This 
+        allows the auth credentails to be passed in one time and to
+        allow multiple clients to reuse the credentials without having 
+        the context of the username and secret.
         """
         if not hasattr(cls, 'instance'):
             if not username or not secret_key:

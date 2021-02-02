@@ -146,7 +146,7 @@ class DataField(TreeSchemaSerializer):
         if not self._field_values_retrieved or force_refresh: 
             self.get_field_values()
 
-    def update(self, 
+    def update(self,
         *, 
         _type: str = None,
         data_type: str = None,
@@ -192,7 +192,7 @@ class DataField(TreeSchemaSerializer):
                 field_updates=update_dict
             )
             self._update_self(resp.get('data_field'))
-        return self._obj
+        return self
     
 
     def get_field_values(self, refresh: bool = False) -> List:
@@ -260,7 +260,8 @@ class DataField(TreeSchemaSerializer):
         elif (isinstance(field_value_inputs, str) 
             and field_value_inputs.lower() in self._field_values_by_value):
             field_value = self._field_values_by_value[field_value_inputs.lower()]
-        elif isinstance(field_value_inputs, dict):
+        
+        if field_value is None:
             field_value = FieldValue(
                 field_value_inputs, 
                 data_store_id=self.data_store_id,

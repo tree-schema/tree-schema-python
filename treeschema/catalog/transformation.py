@@ -4,7 +4,8 @@ from . import (
     DataField, 
     TransformationLink, 
     TreeSchemaSerializer, 
-    TreeSchemaUser
+    TreeSchemaUser,
+    LineageImpact
 )
 from .tags import get_tags_added
 from ..exceptions import DataAssetDoesNotExist, InvalidLinksException
@@ -175,6 +176,22 @@ class Transformation(TreeSchemaSerializer):
                         self._scalar_or_entity_id(lnk[1])
                     ) for lnk in links
                 ]
+        if _links is None:
+            _msg = """To create new links the input must be in one of the following:
+
+            - A single dictionary of source and target field IDs:
+                {'source_field_id': 1, 'target_field_id': 2}
+
+            - A list of dictionaries of source and target field IDs:
+                [{'source_field_id': 1, 'target_field_id': 2}]
+            
+            - A single Tuple of Data Fields, position 0 = source & position 1 = target
+                (DataField, DataField)
+
+            - A list of Tuples of Data Fields, position 0 = source & position 1 = target
+                [(DataField, DataField), (DataField, DataField)]
+            """
+            raise InvalidLinksException(_msg)
         return _links
 
     def _create_or_set_links_state(
@@ -191,37 +208,21 @@ class Transformation(TreeSchemaSerializer):
         the transformation.
         """
         links = self._get_link_structure(links)
-        if links:
-            link_data = {'links': links}
-            link_results_raw = self.client.create_transformation_links(
-                self.id,
-                links=link_data,
-                set_state=set_state
+        link_data = {'links': links}
+        link_results_raw = self.client.create_transformation_links(
+            self.id,
+            links=link_data,
+            set_state=set_state
+        )
+        self._links_retrieved = True
+        link_results = link_results_raw.get('updated_links')
+        for link in link_results:
+            found_link = TransformationLink(
+                link, 
+                transformation_id=self.id
             )
-            self._links_retrieved = True
-            link_results = link_results_raw.get('updated_links')
-            for link in link_results:
-                found_link = TransformationLink(
-                    link, 
-                    transformation_id=self.id
-                )
-                self._add_link(found_link)
-        else:
-            _msg = """To create new links the input must be in one of the following:
-
-            - A single dictionary of source and target field IDs:
-                {'source_field_id': 1, 'target_field_id': 2}
-
-            - A list of dictionaries of source and target field IDs:
-                [{'source_field_id': 1, 'target_field_id': 2}]
-            
-            - A single Tuple of Data Fields, position 0 = source & position 1 = target
-                (DataField, DataField)
-
-            - A list of Tuples of Data Fields, position 0 = source & position 1 = target
-                [(DataField, DataField), (DataField, DataField)]
-            """
-            raise InvalidLinksException(_msg)
+            self._add_link(found_link)
+        
         return self.links
 
     def create_links(
@@ -285,7 +286,7 @@ class Transformation(TreeSchemaSerializer):
         self, 
         link_inputs: [
             Dict, 
-            List[Dict], 
+            List[Dict],
             Tuple[DataField, DataField],
             List[Tuple[DataField, DataField]]
         ],
@@ -317,7 +318,8 @@ class Transformation(TreeSchemaSerializer):
         if (isinstance(link_inputs, int) 
             and link_inputs in self._links_by_id):
             link = self._links_by_id[link_inputs]
-        elif isinstance(link_inputs, dict):
+        
+        if link is None:
             link = TransformationLink(link_inputs, transformation_id=self.id)
             self._add_link(link)
 
@@ -354,4 +356,44 @@ class Transformation(TreeSchemaSerializer):
             for tlid in _scalar_links:
                 self._remove_link(tlid)
         return deleted
+
+    def check_breaking_change(
+        self, 
+        link_state: [
+            Dict, 
+            List[Dict], 
+            Tuple[DataField, DataField],
+            List[Tuple[DataField, DataField]]
+        ],
+        max_depth: int = 5
+    ):
+        """Checks to see if the link_state provided will cause a breaking change.
+        The link_state is compared to the existing links in Tree Schema in order 
+        to see which links have been removed. When a link is removed, the data 
+        assets downstream from that link are considered to be broken. 
+
+        For example, consider the following group of connected data assets (data 
+        moves from left to right):
+            A -- B -- C -- D
+                    /
+            E ------
+            
+        In this example, passing in the values for link_state:
+            [(B,C), (C,D), (E,C)]
+        Would result with the link (A,B) being removed. The data assets that would 
+        be considered broken are C & D, becuase those are the downstream assets
+        from the removed link. The data asset B is not considered broken becuase  
+        Tree Schema assumes that the user removing the link to asset B will also
+        be removing the underlying data dependency. Similarly, data asset E is not 
+        broken because it not dependent on the (A,B) link that was removed.
+        """
+        link_state_fmt = self._get_link_structure(link_state)
+
+        link_data = {'link_state': link_state_fmt}
+        link_results_raw = self.client.check_transformation_breaking_change(
+            self.id,
+            links=link_data,
+            max_depth=max_depth
+        )
+        return LineageImpact(link_results_raw)
 

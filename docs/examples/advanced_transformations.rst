@@ -1,5 +1,5 @@
-Advanced Transformations & Data Lineage
-=======================================
+Advanced Transformation Usage
+=============================
 
 This page shows how to use the Tree Schema library ina `slightly` more advanced,
 and practical, manner.
@@ -91,5 +91,7 @@ Now within Tree Schema there is a mapping from one field to another:
 
    .. image:: ../imgs/multi_link_mapping.png
     :width: 700
+
+
 
 

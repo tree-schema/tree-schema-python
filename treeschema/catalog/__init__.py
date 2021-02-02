@@ -4,6 +4,7 @@ from .field_value import FieldValue
 from .data_field import DataField
 from .data_schema import DataSchema
 from .data_store import DataStore
+from .lineage import LineageImpact
 from .transformation_link import TransformationLink
 from .transformation import Transformation
 

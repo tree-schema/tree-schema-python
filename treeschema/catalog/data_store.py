@@ -105,8 +105,8 @@ class DataStore(TreeSchemaSerializer):
         self._schemas_by_id = {}
         self._schemas_by_name = {}
 
-    def _check_retrieve_schemas(self, force_refresh=False):
-        if not self._schemas_retrieved or force_refresh: 
+    def _check_retrieve_schemas(self, force_refresh=False, pre_fetch=True):
+        if (not self._schemas_retrieved and pre_fetch) or force_refresh: 
             self.get_schemas()
 
     def get_schemas(self, refresh: bool =False) -> List:
@@ -132,6 +132,7 @@ class DataStore(TreeSchemaSerializer):
         self, 
         schema_inputs: [int, Dict], 
         refresh: bool = False,
+        pre_fetch: bool = True,
         raise_if_not_exist: bool = False
     ) -> DataSchema:
         """Creates or retrieves a `DataSchema` object, Inputs can be an integer 
@@ -142,6 +143,11 @@ class DataStore(TreeSchemaSerializer):
             the data schema
         :param refresh: whether or not to force a refresh from the database,
             the default is False
+        :param pre_fetch: whether or not to pre-fetch all of the schemas for this data 
+            store  during the initial load. This should primiarly be used when the inputs 
+            are  a dictionary and you have already batch-retrieved the data assets required. 
+            Note - you do have the option to not pre-fetch and then request a pre-fetch 
+            later.
         :param raise_if_not_exist: default is False, if True will raise a 
             `treescheam.exceptions.DataAssetDoesNotExist` exception if the schema does 
             not exists, when False `None` is returned for schemas that do not exist
@@ -158,7 +164,7 @@ class DataStore(TreeSchemaSerializer):
         `Create a Data Schema <https://developer.treeschema.com/rest-api/#create-a-schema>`_
         """
         # Pre-fetch all schemas for the data store on the first retrival
-        self._check_retrieve_schemas(refresh)
+        self._check_retrieve_schemas(refresh, pre_fetch=pre_fetch)
 
         schema = None
         if (isinstance(schema_inputs, int) 
@@ -167,7 +173,8 @@ class DataStore(TreeSchemaSerializer):
         elif (isinstance(schema_inputs, str) 
             and schema_inputs.lower() in self._schemas_by_name):
             schema = self._schemas_by_name[schema_inputs.lower()]
-        elif isinstance(schema_inputs, dict):
+        
+        if schema is None:
             schema = DataSchema(schema_inputs, data_store_id=self.id)
             self._add_data_schema(schema)
 

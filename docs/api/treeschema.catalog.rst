@@ -15,4 +15,5 @@ treeschema.catalog
    treeschema.catalog.field_value
    treeschema.catalog.transformation
    treeschema.catalog.transformation_link
+   treeschema.catalog.lineage
    treeschema.catalog.user

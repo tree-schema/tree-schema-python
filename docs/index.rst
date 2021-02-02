@@ -86,7 +86,39 @@ This create the following data lineage, which you can explore in Tree Schema.
     :width: 700
 
 
-Check out all of the tutorials and walkthroughs in the **Examples** section!
+You can then changs your data lineage programmatically and check to see if there are 
+any breaking changes before pushing your changes to production.
+
+
+.. code-block:: python
+  
+   t = ts.transformation(transform_inputs)
+
+   transform_links = [
+        (dvc_session_schema.field('session_id'), sess_analytics_schema.field('session_id')),
+        (dvc_session_schema.field('event_ts'), sess_analytics_schema.field('event_ts')),
+
+        (dvc_session_schema.field('user_id'), user_click_schema.field('user_id')),
+        (dvc_session_schema.field('event_ts'), user_click_schema.field('event_ts')),
+
+        (user_click_schema.field('user_id'), user_mongo_schema.field('user_id')),
+        (user_click_schema.field('event_ts'), user_mongo_schema.field('event_ts')),
+
+        (user_click_schema.field('user_id'), click_analytics_schema.field('user_id')),
+        (user_click_schema.field('page_id'), click_analytics_schema.field('page_id')),
+        # -- Removed
+        # (user_click_schema.field('event_ts'), click_analytics_schema.field('event_ts'))
+        
+        # -- Added
+        (user_click_schema.field('event_ts'), click_analytics_schema.field('event_timestamp'))
+   ]
+   
+   lineage_impact = t.check_breaking_change(link_state=transform_links)
+   lineage_impact.breaking
+   # False
+   
+
+Check out all of the tutorials and walkthroughs in the `examples <examples/examples.html>`_ section!
 
 
 Other Tree Schema Articles & Tutorials
