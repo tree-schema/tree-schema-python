@@ -117,8 +117,8 @@ class DataSchema(TreeSchemaSerializer):
         self._fields_by_id = {}
         self._fields_by_name = {}
 
-    def _check_retrieve_fields(self, force_refresh=False):
-        if not self._fields_retrieved or force_refresh: 
+    def _check_retrieve_fields(self, force_refresh=False, pre_fetch=True):
+        if (not self._fields_retrieved and pre_fetch) or force_refresh: 
             self.get_fields()
 
     def get_fields(self, refresh: bool =False) -> List[DataField]:
@@ -150,6 +150,7 @@ class DataSchema(TreeSchemaSerializer):
     def field(self, 
         field_inputs: [int, Dict], 
         refresh: bool = False,
+        pre_fetch: bool = True,
         raise_if_not_exist: bool = False
     ):
         """Creates or retrieves a field object, Inputs can be an integer 
@@ -160,6 +161,11 @@ class DataSchema(TreeSchemaSerializer):
             the field
         :param refresh: whether or not to force a refresh from the database,
             the default is False
+        :param pre_fetch: whether or not to pre-fetch all of the fields for this schema 
+            during the initial load. This should primiarly be used when the inputs are 
+            a dictionary and you have already batch-retrieved the data assets required. 
+            Note - you do have the option to not pre-fetch and then request a pre-fetch 
+            later.
         :param raise_if_not_exist: default is False, if True will raise a 
             `treescheam.exceptions.DataAssetDoesNotExist` exception if the field does 
             not exists, when False `None` is returned for fields that do not exist
@@ -197,7 +203,7 @@ class DataSchema(TreeSchemaSerializer):
 
         """
         # Pre-fetch all fields for the schema on the first retrival
-        self._check_retrieve_fields(refresh)
+        self._check_retrieve_fields(refresh, pre_fetch=pre_fetch)
 
         field = None
         if (isinstance(field_inputs, int) 
@@ -206,7 +212,8 @@ class DataSchema(TreeSchemaSerializer):
         elif (isinstance(field_inputs, str) 
             and field_inputs.lower() in self._fields_by_name):
             field = self._fields_by_name[field_inputs.lower()]
-        elif isinstance(field_inputs, dict):
+        
+        if field is None:
             field = DataField(
                 field_inputs, 
                 data_store_id=self.data_store_id,
@@ -250,3 +257,46 @@ class DataSchema(TreeSchemaSerializer):
             for fid in _scalar_fields:
                 self._remove_data_field(fid)
         return deleted
+
+    def update(self,
+        *, 
+        _type: str = None,
+        description: str = None,
+        tech_poc: [int, TreeSchemaUser] = None,
+        steward: [int, TreeSchemaUser] = None
+    ):
+        """Update an existing schema. Only keyword arguments can be provided, positional 
+        arguments are not allowed.
+
+        :param _type: the type of schema, must be a Tree Schema field type
+        :param description: The description for the schema
+        :param tech_poc: The technical point of contact
+        :param steward: The data steward
+        :returns: a `DataSchema`, an updated version of itself
+
+        >>> # As few as one argument can be provided or all 4 can be provided at once
+        >>> schema.update(
+                description='This is a new description - updated!',
+                steward=1,
+                tech_poc=1,
+                _type='avro'
+            )
+        """
+        update_dict = {}
+        if _type:
+            update_dict['type'] = _type
+        if description:
+            update_dict['description'] = description
+        if tech_poc:
+            update_dict['tech_poc'] = self._scalar_or_entity_id(tech_poc)
+        if steward:
+            update_dict['steward'] = self._scalar_or_entity_id(steward)
+        
+        if update_dict:
+            resp = self.client.update_schema(
+                data_store_id=self.data_store_id,
+                data_schema_id=self.data_schema_id,
+                schema_updates=update_dict
+            )
+            self._update_self(resp.get('data_schema'))
+        return self

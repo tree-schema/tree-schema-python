@@ -107,6 +107,14 @@ class APIClient(object):
             success = True 
         return success
 
+    def batch_retrieve_assets(self, assets) -> Dict:
+        """Creates a data store via the Tree Schema API"""
+        url = endpoints.BATCH_ASSETS
+        return self._post_to_url(
+            url, 
+            json_body=assets
+        )
+
     def get_all_users(self) -> Dict: 
         """Retrieves all users in the user's organization"""
         url = endpoints.USERS
@@ -217,6 +225,22 @@ class APIClient(object):
         return self._post_to_url(
             url, 
             json_body=data_schema_info
+        )
+
+    def update_schema(
+        self, 
+        data_store_id: int, 
+        data_schema_id: int,
+        schema_updates: dict
+    ) -> Dict:
+        args = {
+            'data_store_id': data_store_id, 
+            'data_schema_id': data_schema_id
+        }
+        url = endpoints.SCHEMA.format(**args)
+        return self._post_to_url(
+            url, 
+            json_body=schema_updates
         )
 
     def add_tag_to_data_schema(self, data_store_id, data_schema_id, tags) -> bool:
@@ -500,6 +524,19 @@ class APIClient(object):
         args = {'transformation_id': transformation_id}
         url = endpoints.TRANSFORMATION_LINKS.format(**args)
         return self._delete_by_url(url, json_body=delete_links)
+
+    def check_transformation_breaking_change(self, transformation_id, links, max_depth=5):
+        """Checks to see if the list of links provided for a given 
+        Transformation will cause any breaking changes.
+        """
+        args = {'transformation_id': transformation_id}
+        url = endpoints.BREAKING_CHANGES.format(**args)
+        params = {'max_depth': max_depth}
+        return self._post_to_url(
+            url, 
+            json_body=links,
+            params=params
+        )
 
     def get_transformation_link_by_id(
         self, 

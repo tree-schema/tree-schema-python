@@ -103,4 +103,4 @@ class FieldValue(TreeSchemaSerializer):
                 field_value_updates=update_dict
             )
             self._update_self(resp.get('field_value'))
-        return self._obj
+        return self

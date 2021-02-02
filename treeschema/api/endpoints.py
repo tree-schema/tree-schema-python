@@ -9,6 +9,9 @@ BASE_ENDPOINT_MAPPING = os.environ.get('BASE_ENDPOINT_MAPPING', 'catalog')
 
 TREE_SCHEMA_BASE_URL = os.path.join(TREE_SCHEMA_HOST, BASE_ENDPOINT_MAPPING)
 
+# Batch interactions 
+BATCH_ASSETS         = TREE_SCHEMA_BASE_URL + '/batch-assets'
+
 # Users 
 USERS                = TREE_SCHEMA_BASE_URL + '/users'
 USER                 = TREE_SCHEMA_BASE_URL + '/users/{user_id}'
@@ -37,9 +40,12 @@ TRANSFORMATIONS      = TREE_SCHEMA_BASE_URL + '/transformations'
 TRANSFORMATION       = TREE_SCHEMA_BASE_URL + '/transformations/{transformation_id}'
 TRANSFORMATION_TAGS  = TREE_SCHEMA_BASE_URL + '/transformations/{transformation_id}/tags'
 
-# Transformation links
+# Transformation
 TRANSFORMATION_LINKS = TRANSFORMATION + '/links'
 TRANSFORMATION_LINK  = TRANSFORMATION + '/links/{transformation_link_id}'
+
+# Transformation Breaking Changes
+BREAKING_CHANGES     = TRANSFORMATION_LINKS + '/check-breaking-change'
 
 # dbt
 PARSE_MANIFEST = DATA_STORE + '/dbt/parse-manifest'

@@ -107,6 +107,57 @@ You can add tags by passing in a single value or a list of values to `add_tags()
    schema.add_tags(['multi tag', 'another tag'])
 
 
+Updating Schemas
+----------------
+
+Schemas can be updated with keyword arguments. All of the possible 
+arguments are defined in the `update schema <../api/treeschema.catalog.data_schema.html#treeschema.catalog.data_schema.DataSchema.update>`_
+documentation. You can change as many of the attributes as you'd 
+like at once but you only need to change one value to make the update.
+
+You can also pass in `TreeSchemaUser` objects to update the steward 
+or technical point of contact.
+
+.. code-block:: python
+
+   schema = ts.data_store(1).schema(1)
+   schema
+   # DataSchema(
+   #  data_schema_id: 1,
+   #  name: DS1,
+   #  type: view,
+   #  schema_loc: DS1,
+   #  created_ts: 2021-01-29 14:39:10,
+   #  updated_ts: 2021-02-01 12:37:43,
+   #  description_markup: <p>New Schema description</p>,
+   #  description_raw: New Schema description,
+   #  data_store_id: 1,
+   #  steward: TreeSchemaUser(Asher),
+   #  tech_poc: TreeSchemaUser(Asher)
+   # )
+
+   new_poc = ts.user('grant@treeschema.com')
+
+   schema.update(
+      _type='avro', 
+      description='This is an updated schema',
+      tech_poc=new_poc,
+      steward=new_poc
+   )
+
+   # DataSchema(
+   #   data_schema_id: 1,
+   #   name: DS1,
+   #   type: avro,
+   #   schema_loc: DS1,
+   #   created_ts: 2021-01-29 14:39:10,
+   #   updated_ts: 2021-02-01 17:24:28,
+   #   description_markup: <p>This is an updated schema</p>,
+   #   description_raw: This is an updated schema,
+   #   data_store_id: 1,
+   #   steward: TreeSchemaUser(Grant),
+   #   tech_poc: TreeSchemaUser(Grant)
+   # )
 
 Remove (deprecate) Schemas
 --------------------------

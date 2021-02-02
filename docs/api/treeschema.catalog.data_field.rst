@@ -1,5 +1,5 @@
-treeschema.catalog.data\_field module
-=====================================
+treeschema.catalog.data\_field
+==============================
 
 .. automodule:: treeschema.catalog.data_field
    :members:

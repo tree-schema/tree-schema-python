@@ -88,6 +88,14 @@ ds.delete_schemas([schema2])
 schema.add_tags('schema tag')
 schema.add_tags(['marketing', 'conversion'])
 
+# All of these keyword args are optional, you can pass in 1 or more
+schema.update(
+    description='This is a new description',
+    steward=usr,
+    tech_poc=1,
+    _type='parquet'
+)
+
 
 ########################
 # Data Field Functions #
