@@ -232,16 +232,37 @@ The name is not case senstive but the spelling does need to be exact!
       within your local cache
 
 
-Add Tags to a Field
---------------------
+Manage Tags for a Field
+-----------------------
 
-You can add tags by passing in a single value or a list of values to `add_tags()`
+By default, Tree Schema lazily loads tags. You can retrieve the tags for a field with 
+the `field.tags` property:
+
+.. code-block:: python
+
+   field = ts.data_store(1).schema(1).field(1)
+   field.tags
+   # ['field tag', 'marketing', 'conversion', 'pii', 'api tag']
+
+
+You can add tags by passing in a single value or a list of values to `add_tags()`:
 
 .. code-block:: python
 
    field = ts.data_store(1).schema(1).field(1)
    field.add_tags('new tag')
    field.add_tags(['multi tag', 'another tag'])
+
+
+Similarly, you can remove tags with the `remove_tags()` function:
+
+
+.. code-block:: python
+
+   field = ts.data_store(1).schema(1).field(1)
+   field.remove_tags('remove tag')
+   field.remove_tags(['remove multi tag', 'another tag'])
+
 
 
 

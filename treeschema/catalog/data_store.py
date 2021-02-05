@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 from . import DataSchema, TreeSchemaSerializer, TreeSchemaUser
-from .tags import get_tags_added
+from .tags import get_tags_added, get_tags_removed
 from ..exceptions import DataAssetDoesNotExist
 from ..integrations.dbt import DbtManager
 
@@ -35,7 +35,6 @@ class DataStore(TreeSchemaSerializer):
         :param inputs: a dictionary of inputs that can 
         fully serialize a data store
         """
-        self.tags = []
         self._schemas_by_id = {}
         self._schemas_by_name = {}
         self._schemas_retrieved = False
@@ -50,7 +49,23 @@ class DataStore(TreeSchemaSerializer):
         raw_resp = self.client.get_data_store_by_name(name=self._name)
         return raw_resp.get('data_store')
 
-    def add_tags(self, tags: List[str]) -> Dict:
+    @property
+    def tags(self) -> List[str]:
+        """Retrieves the tags for a given data store. If the tags 
+        have not already been retrieved for the data store then
+        the existing tags are fetched from Tree Schema 
+
+        >>> my_data_store = ts.data_store('my data store')
+        >>> my_data_store.tags
+            # ['tag_1', 'tag_2']
+        """
+        if self._tags_fetched is False:
+            tag_resp = self.client.get_data_store_tags(self.id)
+            self._tags = tag_resp.get('tags', [])
+            self._tags_fetched = True
+        return self._tags
+
+    def add_tags(self, tags: [str, List[str]]) -> Dict:
         """Adds one or more tags to the data store
 
         :param tags: a list of tags, a single tag can also be passed
@@ -64,11 +79,33 @@ class DataStore(TreeSchemaSerializer):
             tags = [tags]
 
         resp = None
-        tags_to_add = [t for t in tags if t not in self.tags]
+        tags_to_add = [t for t in tags if t not in self._tags]
         if len(tags_to_add) > 0:
             tag_res = self.client.add_tag_to_data_store(self.id, tags_to_add)
             added_tags = get_tags_added(tag_res)
-            self.tags.extend(added_tags)
+            self._tags.extend(added_tags)
+            resp = tag_res
+        return resp
+
+    def remove_tags(self, tags: [str, List[str]]) -> Dict:
+        """Removes one or more tags from the data store
+
+        :param tags: a list of tags, a single tag can also be passed
+        :returns: the API response
+
+        >>> my_data_store = ts.data_store('my data store')
+        >>> my_data_store.remove_tags(['new_tag'])
+        >>> my_data_store.remove_tags('single tag')
+        """
+        if not isinstance(tags, list):
+            tags = [tags]
+
+        resp = None
+        if len(tags) > 0:
+            tag_res = self.client.remove_data_store_tags(self.id, tags)
+            tags_removed = get_tags_removed(tag_res)
+            if len(tags_removed) > 0:
+                self._tags = [t for t in self._tags if t.lower() not in tags_removed]
             resp = tag_res
         return resp
 

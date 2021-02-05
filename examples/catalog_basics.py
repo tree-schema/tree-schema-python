@@ -41,6 +41,9 @@ ds2_inputs = {
 }
 ds2 = ts.data_store(ds2_inputs)
 
+# Get existing tags for data store
+ds.tags
+
 # Add tags to a data store
 ds.add_tags('single_tag')
 ds.add_tags(['new tag', 'data_store_tag'])

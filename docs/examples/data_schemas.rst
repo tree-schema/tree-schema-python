@@ -95,16 +95,36 @@ The name is not case senstive but the spelling does need to be exact!
       a local cache
 
 
-Add Tags to a Schema
---------------------
+Manage Tags for a Schema
+------------------------
 
-You can add tags by passing in a single value or a list of values to `add_tags()`
+By default, Tree Schema lazily loads tags. You can retrieve the tags for a schema with 
+the `schema.tags` property:
+
+.. code-block:: python
+
+   schema = ts.data_store(1).schema(1)
+   schema.tags
+   # ['schema tag', 'marketing', 'conversion', 'pii', 'api tag']
+
+
+You can add tags by passing in a single value or a list of values to `add_tags()`:
 
 .. code-block:: python
 
    schema = ts.data_store(1).schema(1)
    schema.add_tags('new tag')
    schema.add_tags(['multi tag', 'another tag'])
+
+
+Similarly, you can remove tags with the `remove_tags()` function:
+
+
+.. code-block:: python
+
+   schema = ts.data_store(1).schema(1)
+   schema.remove_tags('remove tag')
+   schema.remove_tags(['remove multi tag', 'another tag'])
 
 
 Updating Schemas

@@ -90,10 +90,20 @@ The name is not case senstive but the spelling does need to be exact!
       data stores and subsequent access happens within your local cache
 
 
-Add Tags to a Data Store
-------------------------
+Manage Tags for a Data Store
+----------------------------
 
-You can add tags by passing in a single value or a list of values to `add_tags()`
+By default, Tree Schema lazily loads tags. You can retrieve the tags for a data store with 
+the `data_store.tags` property:
+
+.. code-block:: python
+
+   data_store = ts.data_store(1)
+   data_store.tags
+   # ['ds tag', 'marketing', 'conversion', 'pii', 'api tag']
+
+
+You can add tags by passing in a single value or a list of values to `add_tags()`:
 
 .. code-block:: python
 
@@ -101,7 +111,21 @@ You can add tags by passing in a single value or a list of values to `add_tags()
    data_store.add_tags('new tag')
    data_store.add_tags(['multi tag', 'another tag'])
 
-Tags will show up in the GUI under this data store.
+
+This can be viewed within the Tree Schema GUI:
 
 .. image:: ../imgs/tags_added.png
    :width: 500
+
+
+Similarly, you can remove tags with the `remove_tags()` function:
+
+
+.. code-block:: python
+
+   data_store = ts.data_store(1)
+   data_store.remove_tags('remove tag')
+   data_store.remove_tags(['remove multi tag', 'another tag'])
+
+
+

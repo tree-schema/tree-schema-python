@@ -32,6 +32,8 @@ class TreeSchemaSerializer(object):
         self._name = this_name
         self._raw_inputs = raw_inputs.copy() if isinstance(raw_inputs, dict) else None
         self._is_validated = False
+        self._tags = []
+        self._tags_fetched = False
         self.obj
 
     def _simplify_user_raw_inputs(self, raw_inputs: Dict):
@@ -58,7 +60,14 @@ class TreeSchemaSerializer(object):
             if len(repr_items) > 0:
                 res_str += '\n    '
             res_str += ",\n    ".join(repr_items)
-            if len(repr_items) > 0:
+            if len(self._tags) > 0:
+                if len(self._tags) > 5:
+                    tags_str = f',\n    tags: [{", ".join(self._tags[:5])}, ...]'
+                else:
+                    tags_str = f',\n    tags: [{", ".join(self._tags)}]'
+                tags_str += '\n'
+                res_str += tags_str
+            else:
                 res_str += '\n'
             _res = f'{self.__class__.__name__}({res_str})' 
         else:

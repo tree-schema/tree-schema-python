@@ -282,7 +282,7 @@ Viewing the Impact from a Breaking Change
 
 Since Tree Schema captures data lineage at the field level you may have an overwhelming 
 number of data assets that are impacted by even the smallest breaking change. To 
-help provide a more succienct output to you there are several arguments you can use 
+help provide a more succinct output to you there are several arguments you can use 
 when interacting with the Tree Schema API to reduce the clutter.
 
 1. Change the `max_depth` for finding breaking changes.

@@ -90,7 +90,12 @@ class APIClient(object):
             )
         return resp.json()
 
-    def _delete_by_url(self, url: str, json_body: Dict = None) -> bool:
+    def _delete_by_url(
+        self,
+        url: str,
+        json_body: Dict = None,
+        return_json: bool = False
+    ) -> bool:
         """Executes a DELETE from the Tree Schema URL 
 
         :param url: The URL for the API
@@ -99,13 +104,15 @@ class APIClient(object):
         body = {}
         if json_body:
             body['json'] = json_body
-
         resp = r.delete(url, headers=self.base_headers, **body)
-        if resp.status_code >= 400:
-            success = False
+        if return_json:
+            return resp.json()
         else:
-            success = True 
-        return success
+            if resp.status_code >= 400:
+                success = False
+            else:
+                success = True
+            return success
 
     def batch_retrieve_assets(self, assets) -> Dict:
         """Creates a data store via the Tree Schema API"""
@@ -186,6 +193,19 @@ class APIClient(object):
             json_body=_tags,
         )
 
+    def get_data_store_tags(self, data_store_id) -> Dict[str, List[str]]:
+        """Returns an object that contains the list of tags for a data store"""
+        args = {'data_store_id': data_store_id}
+        url = endpoints.DATA_STORE_TAGS.format(**args)
+        return self._get_by_url(url)
+
+    def remove_data_store_tags(self, data_store_id, tags) -> Dict[str, List[str]]:
+        """Removes a list of tags from a data store"""
+        args = {'data_store_id': data_store_id}
+        url = endpoints.DATA_STORE_TAGS.format(**args)
+        _tags = {'tags': tags}
+        return self._delete_by_url(url, json_body=_tags, return_json=True)
+
     def get_all_schemas_for_data_store(self, data_store_id) -> List[Dict]:
         args = {'data_store_id': data_store_id}
         url = endpoints.SCHEMAS.format(**args)
@@ -252,6 +272,19 @@ class APIClient(object):
             url, 
             json_body=_tags
         )
+
+    def get_data_schema_tags(self, data_store_id, data_schema_id) -> Dict[str, List[str]]:
+        """Returns an object that contains the list of tags for a data schema"""
+        args = {'data_store_id': data_store_id, 'data_schema_id': data_schema_id}
+        url = endpoints.SCHEMA_TAGS.format(**args)
+        return self._get_by_url(url)
+
+    def remove_data_schema_tags(self, data_store_id, data_schema_id, tags) -> Dict[str, List[str]]:
+        """Removes a list of tags from a data store"""
+        _tags = {'tags': tags}
+        args = {'data_store_id': data_store_id, 'data_schema_id': data_schema_id}
+        url = endpoints.SCHEMA_TAGS.format(**args)
+        return self._delete_by_url(url, json_body=_tags, return_json=True)
 
     def delete_schemas_from_data_store(self, data_store_id, delete_schemas) -> bool:
         """Deletes (deprecates) a list of schemas from a data store 
@@ -347,6 +380,27 @@ class APIClient(object):
             json_body=_tags
         )
 
+    def get_field_tags(self, data_store_id, data_schema_id, field_id) -> Dict[str, List[str]]:
+        """Returns an object that contains the list of tags for a data field"""
+        args = {
+            'data_store_id': data_store_id, 
+            'data_schema_id': data_schema_id, 
+            'field_id': field_id
+        }
+        url = endpoints.FIELD_TAGS.format(**args)
+        return self._get_by_url(url)
+
+    def remove_field_tags(self, data_store_id, data_schema_id, field_id, tags) -> Dict[str, List[str]]:
+        """Removes a list of tags from a data store"""
+        _tags = {'tags': tags}
+        args = {
+            'data_store_id': data_store_id, 
+            'data_schema_id': data_schema_id, 
+            'field_id': field_id
+        }
+        url = endpoints.FIELD_TAGS.format(**args)
+        return self._delete_by_url(url, json_body=_tags, return_json=True)
+
     def delete_fields_from_schema(self, data_store_id, data_schema_id, delete_fields) -> bool:
         """Deletes (deprecates) a list of schemas from a data store 
         via the Tree Schema API
@@ -387,7 +441,6 @@ class APIClient(object):
             url,
             params={'value': value}
         )
-
 
     def get_field_value_by_id(
         self, 
@@ -483,6 +536,19 @@ class APIClient(object):
             url, 
             json_body=_tags,
         )
+
+    def get_transformation_tags(self, transformation_id) -> Dict[str, List[str]]:
+        """Returns an object that contains the list of tags for transformation"""
+        args = {'transformation_id': transformation_id}
+        url = endpoints.TRANSFORMATION_TAGS.format(**args)
+        return self._get_by_url(url)
+
+    def remove_transformation_tags(self, transformation_id, tags) -> Dict[str, List[str]]:
+        """Removes a list of tags from a data store"""
+        _tags = {'tags': tags}
+        args = {'transformation_id': transformation_id}
+        url = endpoints.TRANSFORMATION_TAGS.format(**args)
+        return self._delete_by_url(url, json_body=_tags, return_json=True)
 
     def get_all_transformation_links(self, transformation_id) -> Dict:
         """Creates a data store via the Tree Schema API"""

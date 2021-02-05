@@ -108,7 +108,7 @@ class TestAPIClient(unittest.TestCase):
             )
 
     @patch('treeschema.api.client.r.delete')  
-    def _delete_by_url(self, mock_get):
+    def test__delete_by_url(self, mock_get):
         test_obj = {'data': 'value'}
         
         response = requests.Response()
@@ -370,7 +370,7 @@ class TestAPIClient(unittest.TestCase):
         assert resp == resp_obj
 
     @patch('treeschema.api.client.r.post')  
-    def add_tag_to_data_store(self, mock_get):
+    def test_add_tag_to_data_store(self, mock_get):
         tags = ['new_tag', 'second tag']
         resp_statuses = ['added', 'exists']
 
@@ -389,9 +389,26 @@ class TestAPIClient(unittest.TestCase):
         resp = client.add_tag_to_data_store(1, tags)
         assert resp == resp_data_store
 
+    @patch('treeschema.api.client.r.delete')  
+    def test_remove_tag_to_data_store(self, mock_get):
+        tags = ['new_tag', 'second tag']
+        resp_data_store = {
+            "tags_removed": tags
+        }
+
+        response = requests.Response()
+        response.status_code = 200
+        response.json = MagicMock()
+        response.json.return_value = resp_data_store
+        mock_get.return_value = response
+        
+        client = APIClient()
+        resp = client.remove_data_store_tags(1, tags)
+        assert resp == resp_data_store
+
 
     @patch('treeschema.api.client.r.get')  
-    def get_all_schemas_for_data_store(self, mock_get):
+    def test_get_all_schemas_for_data_store(self, mock_get):
         resp_data_schemas = [
             {
                 "data_schema_id": 16,
@@ -420,14 +437,14 @@ class TestAPIClient(unittest.TestCase):
                 "next_page": None,
                 "total_cnt": 1
             },
-            "data_stores": resp_data_schemas
+            "data_schemas": resp_data_schemas
         }
 
         response = requests.Response()
         response.status_code = 200
         response.json = MagicMock()
-        response.json.return_value = resp_data_schemas
-        mock_get.return_value = resp_obj
+        response.json.return_value = resp_obj
+        mock_get.return_value = response
         
         client = APIClient()
         resp = client.get_all_schemas_for_data_store(
@@ -550,7 +567,7 @@ class TestAPIClient(unittest.TestCase):
         assert resp == resp_obj
 
     @patch('treeschema.api.client.r.post')  
-    def add_tag_to_data_schema(self, mock_get):
+    def test_add_tag_to_data_schema(self, mock_get):
         tags = ['new_tag', 'second tag']
         resp_statuses = ['added', 'exists']
 
@@ -573,9 +590,29 @@ class TestAPIClient(unittest.TestCase):
         )
         assert resp == resp_data_store
 
+    @patch('treeschema.api.client.r.delete')  
+    def test_remove_tag_from_data_schema(self, mock_get):
+        tags = ['new_tag', 'second tag']
+        resp_data_schema = {
+            "tags_removed": tags
+        }
+
+        response = requests.Response()
+        response.status_code = 200
+        response.json = MagicMock()
+        response.json.return_value = resp_data_schema
+        mock_get.return_value = response
+        
+        client = APIClient()
+        resp = client.remove_data_schema_tags(
+            data_store_id=1,
+            data_schema_id=1,
+            tags=tags
+        )
+        assert resp == resp_data_schema
 
     @patch('treeschema.api.client.r.get')  
-    def get_all_fields_for_data_schema(self, mock_get):
+    def test_get_all_fields_for_data_schema(self, mock_get):
         resp_data_fields = [
             {
                 "field_id": 1,
@@ -614,8 +651,8 @@ class TestAPIClient(unittest.TestCase):
         response = requests.Response()
         response.status_code = 200
         response.json = MagicMock()
-        response.json.return_value = resp_data_fields
-        mock_get.return_value = resp_obj
+        response.json.return_value = resp_obj
+        mock_get.return_value = response
         
         client = APIClient()
         resp = client.get_all_fields_for_schema(
@@ -795,7 +832,7 @@ class TestAPIClient(unittest.TestCase):
 
 
     @patch('treeschema.api.client.r.post')  
-    def add_tag_to_data_field(self, mock_get):
+    def test_add_tag_to_data_field(self, mock_get):
         tags = ['new_tag', 'second tag']
         resp_statuses = ['added', 'exists']
 
@@ -819,10 +856,30 @@ class TestAPIClient(unittest.TestCase):
         )
         assert resp == resp_data_store
 
+    @patch('treeschema.api.client.r.delete')  
+    def test_remove_tag_from_field(self, mock_get):
+        tags = ['new_tag', 'second tag']
+        resp_data_field = {
+            "tags_removed": tags
+        }
 
+        response = requests.Response()
+        response.status_code = 200
+        response.json = MagicMock()
+        response.json.return_value = resp_data_field
+        mock_get.return_value = response
+        
+        client = APIClient()
+        resp = client.remove_field_tags(
+            data_store_id=1,
+            data_schema_id=1,
+            field_id=1,
+            tags=tags
+        )
+        assert resp == resp_data_field
 
     @patch('treeschema.api.client.r.get')  
-    def get_get_all_values_for_field(self, mock_get):
+    def test_get_get_all_values_for_field(self, mock_get):
         resp_field_values = [
             {
                 "field_value_id": 396,
@@ -847,14 +904,14 @@ class TestAPIClient(unittest.TestCase):
                 "next_page": None,
                 "total_cnt": 1
             },
-            "data_fields": resp_field_values
+            "field_values": resp_field_values
         }
 
         response = requests.Response()
         response.status_code = 200
         response.json = MagicMock()
-        response.json.return_value = resp_field_values
-        mock_get.return_value = resp_obj
+        response.json.return_value = resp_obj
+        mock_get.return_value = response
         
         client = APIClient()
         resp = client.get_all_values_for_field(

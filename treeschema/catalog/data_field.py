@@ -1,7 +1,7 @@
 from typing import Any, Dict, List
 
 from . import FieldValue, TreeSchemaSerializer, TreeSchemaUser
-from .tags import get_tags_added
+from .tags import get_tags_added, get_tags_removed
 from ..exceptions import DataAssetDoesNotExist, InvalidFieldInputs
 
 
@@ -57,7 +57,6 @@ class DataField(TreeSchemaSerializer):
         """
         self.data_store_id = data_store_id
         self.data_schema_id = data_schema_id
-        self.tags = []
         self._field_values_by_id = {}
         self._field_values_by_value = {}
         self._field_values_retrieved = False
@@ -81,6 +80,27 @@ class DataField(TreeSchemaSerializer):
         )
         return raw_resp.get('data_field')
     
+    @property
+    def tags(self) -> List[str]:
+        """Retrieves the tags for a given data store. If the tags 
+        have not already been retrieved for the data store then
+        the existing tags are fetched from Tree Schema 
+
+        >>> my_data_store = ts.data_store('my data store')
+        >>> my_data_store.tags
+            # ['tag_1', 'tag_2']
+        """
+        if self._tags_fetched is False:
+            tag_resp = self.client.get_field_tags(
+                data_store_id=self.data_store_id, 
+                data_schema_id=self.data_schema_id,
+                field_id=self.id
+            )
+            self._tags = tag_resp.get('tags', [])
+            self._tags_fetched = True
+        return self._tags
+
+
     def add_tags(self, tags: List[str]) -> Dict:
         """Adds one or more tags to the data field
 
@@ -94,7 +114,7 @@ class DataField(TreeSchemaSerializer):
             tags = [tags]
 
         resp = None
-        tags_to_add = [t for t in tags if t not in self.tags]
+        tags_to_add = [t for t in tags if t not in self._tags]
         if len(tags_to_add) > 0:
             tag_res = self.client.add_tag_to_field(
                 data_store_id=self.data_store_id, 
@@ -103,10 +123,37 @@ class DataField(TreeSchemaSerializer):
                 tags=tags_to_add
             )
             added_tags = get_tags_added(tag_res)
-            self.tags.extend(added_tags)
+            self._tags.extend(added_tags)
             resp = tag_res
         return resp
-        
+
+    def remove_tags(self, tags: [str, List[str]]) -> Dict:
+        """Removes one or more tags from the data field
+
+        :param tags: a list of tags, a single tag can also be passed
+        :returns: the API response
+
+        >>> my_field = ts.data_store('my data store').schema('some schema').field('my_field')
+        >>> my_field.remove_tags(['new_tag'])
+        >>> my_field.remove_tags('single tag')
+        """
+        if not isinstance(tags, list):
+            tags = [tags]
+
+        resp = None
+        if len(tags) > 0:
+            tag_res = self.client.remove_field_tags(
+                data_store_id=self.data_store_id, 
+                data_schema_id=self.data_schema_id,
+                field_id=self.id, 
+                tags=tags
+            )
+            tags_removed = get_tags_removed(tag_res)
+            if len(tags_removed) > 0:
+                self._tags = [t for t in self._tags if t.lower() not in tags_removed]
+            resp = tag_res
+        return resp
+
     def _create(self):
         data_field = {}
         if not self._is_validated:

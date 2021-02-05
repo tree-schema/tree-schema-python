@@ -1,6 +1,6 @@
-
 Transformations
 ===============
+
 
 Transformations describe how data moves in in your ecosystem. By themselves, they are just 
 holders, but once you add transformation links to your transformation you will 
@@ -63,10 +63,20 @@ The name is not case senstive but the spelling does need to be exact!
    t = ts.transformation('My Transform')
 
 
-Add Tags to a transformation
-----------------------------
+Manage Tags for a Transformation
+--------------------------------
 
-You can add tags by passing in a single value or a list of values to `add_tags()`
+By default, Tree Schema lazily loads tags. You can retrieve the tags for a transformation with 
+the `transformation.tags` property:
+
+.. code-block:: python
+
+   t = ts.transformation(1)
+   t.tags
+   # ['transform tag', 'marketing', 'conversion', 'pii', 'api tag']
+
+
+You can add tags by passing in a single value or a list of values to `add_tags()`:
 
 .. code-block:: python
 
@@ -74,4 +84,12 @@ You can add tags by passing in a single value or a list of values to `add_tags()
    t.add_tags('new tag')
    t.add_tags(['multi tag', 'another tag'])
 
-Tags will show up in the GUI under this transformation.
+
+Similarly, you can remove tags with the `remove_tags()` function:
+
+.. code-block:: python
+
+   t = ts.transformation(1)
+   t.remove_tags('remove tag')
+   t.remove_tags(['remove multi tag', 'another tag'])
+
